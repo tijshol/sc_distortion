@@ -1,0 +1,11 @@
+How to create PNG files:
+
+UTIL/atob < input_data.txt > input_data.bin
+convert -depth 8 -size 224x224+0 rgb:input_data.bin dog.png
+
+
+UTIL/atob < output_data.txt > output_data.anet.bin
+UTIL/reorder < output_data.anet.bin > tensor.bin
+convert -depth 8 -size 660x440+0 gray:tensor.bin tensor.png
+xv tensor.png
+

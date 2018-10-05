@@ -1,0 +1,9 @@
+rm -f */*.o
+rm -f */*.d
+rm -f */*/*.o
+rm -f */*/*.d
+rm -f tb/sctop
+rm -f tb/LOG
+rm -f tb/tr.vcd
+rm -f sw/app.elf
+rm -rf ./VLSIProject/solution1/.autopilot/

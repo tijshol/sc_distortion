@@ -1,0 +1,107 @@
+[*]
+[*] GTKWave Analyzer v3.3.79 (w)1999-2017 BSI
+[*] Thu Aug 23 09:00:57 2018
+[*]
+[dumpfile] "tr.vcd"
+[dumpfile_mtime] "Thu Aug 23 08:52:45 2018"
+[dumpfile_size] 329515008
+[savefile] "sctop.gtkw"
+[timestart] 44864430600
+[size] 1604 1092
+[pos] -1 -1
+*-17.077374 44864500000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 210
+[signals_width] 270
+[sst_expanded] 1
+[sst_vpaned_height] 328
+@28
+SystemC.clk
+SystemC.resetn
+@22
+SystemC.address[31:0]
+@200
+-AXI READ
+@22
+SystemC.axi_lite_araddr[31:0]
+@28
+SystemC.axi_lite_arvalid
+SystemC.axi_lite_arready
+SystemC.axi_lite_rvalid
+SystemC.axi_lite_rready
+@22
+SystemC.axi_lite_rdata[31:0]
+@28
+SystemC.axi_lite_rresp[1:0]
+SystemC.\read_data_channel.cs[2:0]
+SystemC.\read_data_channel.ns[2:0]
+@200
+-AXI WRITE
+@22
+SystemC.axi_lite_awaddr[31:0]
+@28
+SystemC.axi_lite_awready
+SystemC.axi_lite_awvalid
+SystemC.axi_lite_wvalid
+SystemC.axi_lite_wready
+SystemC.axi_lite_bvalid
+SystemC.axi_lite_bready
+SystemC.axi_lite_bresp[1:0]
+@22
+SystemC.axi_lite_wdata[31:0]
+SystemC.axi_lite_wstrb[3:0]
+@200
+-AXI LITE MASTER
+@28
+SystemC.go
+SystemC.busy
+@29
+SystemC.done
+@28
+SystemC.interrupt
+@22
+SystemC.read_data[31:0]
+SystemC.write_data[31:0]
+@28
+SystemC.rnw
+SystemC.\axi_master.cs[2:0]
+SystemC.\axi_master.ns[2:0]
+SystemC.\axi_master.raf
+@22
+SystemC.\axi_master.ta[31:0]
+SystemC.\axi_master.rcd[31:0]
+@28
+SystemC.\axi_master.srt
+SystemC.\axi_master.rtf
+SystemC.\axi_master.swd
+SystemC.\axi_master.swt
+SystemC.\axi_master.wtf
+SystemC.\axi_master.wds
+@22
+SystemC.\axi_master.wcd[31:0]
+@28
+SystemC.s_axi_wstate[2:0]
+SystemC.s_axi_wnstate[2:0]
+@200
+-IP READ
+@22
+SystemC.s_ip_raddr[31:0]
+@28
+SystemC.s_ip_rvalid
+SystemC.s_ip_rready
+@22
+SystemC.s_ip_rdata[31:0]
+@200
+-IP WRITE
+@22
+SystemC.s_ip_waddr[31:0]
+@28
+SystemC.s_ip_wvalid
+SystemC.s_ip_wready
+@22
+SystemC.s_ip_wstrb[3:0]
+SystemC.s_ip_wdata[31:0]
+@28
+SystemC.\write_address_channel.cs[1:0]
+SystemC.\write_address_channel.ns[1:0]
+[pattern_trace] 1
+[pattern_trace] 0
