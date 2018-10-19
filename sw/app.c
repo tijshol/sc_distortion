@@ -35,8 +35,8 @@ int main ()
     }
 
     for (i = 0; i < 4; i++){
-        print_str("bias i = "); print_str(str[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((uint32_t) str[i]);
+        print_str("bias i = "); print_char(str[i]); print_str("\n");
+        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((int) str[i]);
     }
 
     // for (i = 0; i < weight_size; i++){
@@ -67,7 +67,7 @@ int main ()
     for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
         // BIASRAM[i] = j;
-        print_str("char  = "); print_str((char)j); print_str("\n");
+        print_str("char  = "); print_char((char)j); print_str("\n");
     }
 
     // for (i = 0; i < WEIGHT_SIZE; i++){

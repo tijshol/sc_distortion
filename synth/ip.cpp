@@ -95,7 +95,7 @@ void myip::run() {
 
         case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
             waddr = (axi_waddr - BIAS_OFFSET) >> 2;
-            int_file = ((int) axi_data / BIAS_SCALING);
+            int_file = ((int) axi_data);// / BIAS_SCALING);
             bias[waddr] = ( sc_int < WEIGHT_WIDTH> ) int_file;
 
             break;
