@@ -1,4 +1,4 @@
-cd ../sw
+cd sw
 make
 cd ../tb
 make
