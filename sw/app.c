@@ -20,8 +20,9 @@ uint32_t *OUTPUTRAM = (uint32_t *)SYS_OUTPUT_RAM_BASE;
 
 int Iflag  = 1;
 
-int
-main ()
+char str[5] = "dick";
+
+int main ()
 {
 
     enableIRQ();
@@ -33,28 +34,28 @@ main ()
         SYS_MEM32((SYS_AXI_BASE + (4*i) )) = i+1;
     }
 
-    for (i = 0; i < BIAS_SIZE; i++){
-        //print_str("bias i = "); print_int(i); print_str(" "); print_int(BIASRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = BIASRAM[i];
+    for (i = 0; i < 4; i++){
+        print_str("bias i = "); print_str(str[i]); print_str("\n");
+        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((uint32_t) str[i]);
     }
 
-    for (i = 0; i < WEIGHT_SIZE; i++){
-        //print_str("weight i = "); print_int(i); print_str(" "); print_int(FILTERRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + WEIGHT_OFFSET + (4*i) )) = FILTERRAM[i];
-    }
+    // for (i = 0; i < weight_size; i++){
+        // // print_str("weight i = "); print_int(i); print_str(" "); print_int(filterram[i]); print_str("\n");
+        // sys_mem32((sys_axi_base + weight_offset + (4*i) )) = filterram[i];
+    // }
 
-    for (i = 0; i < TENSOR_SIZE; i++){
-        //print_str("tensor i = "); print_int(i); print_str(" "); print_int(INPUTRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + TENSOR_OFFSET + (4*i) )) = INPUTRAM[i];
-    }
+    // for (i = 0; i < tensor_size; i++){
+        // // print_str("tensor i = "); print_int(i); print_str(" "); print_int(inputram[i]); print_str("\n");
+        // sys_mem32((sys_axi_base + tensor_offset + (4*i) )) = inputram[i];
+    // }
 
-#ifdef NONO
-    for (i = 0; i < OUTPUT_TENSOR_SIZE; i++){
-        //print_str("output_tensor i = "); print_int(i); print_str(" "); print_int(INPUTRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*i) )) = OUTPUTRAM[i];
-    }
+// #ifdef nono
+    // for (i = 0; i < output_tensor_size; i++){
+        // // print_str("output_tensor i = "); print_int(i); print_str(" "); print_int(inputram[i]); print_str("\n");
+        // sys_mem32((sys_axi_base + output_tensor_offset + (4*i) )) = outputram[i];
+    // }
 
-#endif
+// #endif
 
     print_str("***********\n 1..16 + 21 !! (0x16) \n***********\n ");
 
@@ -63,40 +64,39 @@ main ()
         print_str("j = "); print_int(j); print_str("\n");
     }
 
-    for (i = 0; i < BIAS_SIZE; i++){
+    for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
-        BIASRAM[i] = j;
-        //print_str("bias  = "); print_int(j); print_str("\n");
+        // BIASRAM[i] = j;
+        print_str("char  = "); print_str((char)j); print_str("\n");
     }
 
+    // for (i = 0; i < WEIGHT_SIZE; i++){
+        // j = SYS_MEM32((SYS_AXI_BASE + WEIGHT_OFFSET + (4*i) ));
+        // FILTERRAM[i] = j;
+        // //print_str("weight  = "); print_int(j); print_str("\n");
+    // }
 
-    for (i = 0; i < WEIGHT_SIZE; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + WEIGHT_OFFSET + (4*i) ));
-        FILTERRAM[i] = j;
-        //print_str("weight  = "); print_int(j); print_str("\n");
-    }
+    // for (i = 0; i < TENSOR_SIZE; i++){
+        // j = SYS_MEM32((SYS_AXI_BASE + TENSOR_OFFSET + (4*i) ));
+        // INPUTRAM[i] = j;
+        // //print_str("tensor  = "); print_int(j); print_str("\n");
+    // }
+    // SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
+    // print_str("Start CNN \n");
 
-    for (i = 0; i < TENSOR_SIZE; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + TENSOR_OFFSET + (4*i) ));
-        INPUTRAM[i] = j;
-        //print_str("tensor  = "); print_int(j); print_str("\n");
-    }
-    SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
-    print_str("Start CNN \n");
+    // //while ( (j = SYS_MEM32((SYS_AXI_BASE + 4))) != 0x80);
 
-    //while ( (j = SYS_MEM32((SYS_AXI_BASE + 4))) != 0x80);
+    // while (Iflag);
 
-    while (Iflag);
+    // SYS_MEM32((SYS_AXI_BASE ) ) = 0x00; // stop _cnn
+    // SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
+    // print_str("CNN Done\n");
 
-    SYS_MEM32((SYS_AXI_BASE ) ) = 0x00; // stop _cnn
-    SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
-    print_str("CNN Done\n");
-
-    for (i = 0; i < OUTPUT_TENSOR_SIZE; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*i) ));
-        OUTPUTRAM[i] = j;
-        //print_str("output_tensor  = "); print_int(j); print_str("\n");
-    }
+    // for (i = 0; i < OUTPUT_TENSOR_SIZE; i++){
+        // j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*i) ));
+        // OUTPUTRAM[i] = j;
+        // //print_str("output_tensor  = "); print_int(j); print_str("\n");
+    // }
 
     print_str("***********\nEVERYTHING IS DONE\n***********\n ");
 
