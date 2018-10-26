@@ -1,1 +1,0 @@
-isrsupport.o: isrsupport.c
