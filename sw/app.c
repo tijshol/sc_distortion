@@ -13,7 +13,7 @@
 
 #define halt()            DBGC_HALT = 1
 
-uint32_t *BIASRAM = (uint32_t *)SYS_BIAS_RAM_BASE;
+uint32_t *INPUTRAM = (uint32_t *)SYS_INPUT_RAM_BASE;
 
 int Iflag  = 1;
 
@@ -32,7 +32,7 @@ int main ()
     // }
 
     for (i = 0; i < 4; i++){
-        print_str("bias i = "); print_char(str[i]); print_str("\n");
+        print_str("bias i = "); print_int((int)INPUTRAM[i]); print_str("\n");
         SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((int) str[i]);
     }
 	
