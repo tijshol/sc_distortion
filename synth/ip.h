@@ -28,8 +28,8 @@ SC_MODULE (myip)
     sc_out < bool > interrupt;
 
     void run();
-    int gen_select_mask();
-    int run_cnn();
+    // int gen_select_mask();
+    int run_distort();
 
     SC_CTOR(myip)
     {
