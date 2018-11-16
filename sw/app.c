@@ -32,8 +32,8 @@ int main ()
     // }
 
     for (i = 0; i < 4; i++){
-        print_str("bias i = "); print_int((int)INPUTRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((int) str[i]);
+        print_str("bias i = "); print_hex_uint(INPUTRAM[i]); print_str("\n");
+        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = (INPUTRAM[i]);
     }
 	
     // for (i = 0; i < 16; i++){
@@ -44,15 +44,17 @@ int main ()
     for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
         // BIASRAM[i] = j;
-        print_str("char = "); print_char((char)j); print_str("\n");
+        print_str("char = "); print_hex_uint(j); print_str("\n");
     }
 
 	SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
 	
+	while(Iflag);
+	
 	for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
         // BIASRAM[i] = j;
-        print_str("char = "); print_char((char)j); print_str("\n");
+        print_str("char = "); print_int(j); print_str("\n");
     }
 
     print_str("***********\nEVERYTHING IS DONE\n***********\n ");

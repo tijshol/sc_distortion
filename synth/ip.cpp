@@ -7,9 +7,16 @@
 unsigned registers[16];
 
 // BIAS_VECTOR_TYPE
-typedef sc_int <WEIGHT_WIDTH>  bias_vector_type [LAYER_SIZE] ;
+typedef sc_int <32>  bias_vector_type [LAYER_SIZE] ;
 
 bias_vector_type bias;
+
+//sc_fxtype_params fxt(32,1);
+//sc_fxtype_context fcxt(fxt);
+
+//sc_fix fixed_point_vector [LAYER_SIZE];
+
+sc_fixed_fast <32,1> fixed_point_vector [LAYER_SIZE];
 
 int rdone = 0;
 
@@ -27,6 +34,9 @@ void myip::run() {
     unsigned int waddr =  axi_waddr >> 2;
     unsigned int raddr =  axi_raddr >> 2;
 
+	signed exponent;
+	unsigned mantisa;
+	
     int mask;
 
     sc_uint <32> dataout;
@@ -46,7 +56,11 @@ void myip::run() {
 		
         case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
             waddr = (axi_waddr - BIAS_OFFSET) >> 2;
-            bias[waddr] = ( sc_int < WEIGHT_WIDTH> ) axi_data;
+			exponent = (axi_data & ~(1 << 31)) >> 23; // Get exponent from float
+			mantisa = axi_data << 8; // Get mantisa from float and set 1 bit in front of it
+			mantisa |= (1 << 31); // Set first bit to 1
+			fixed_point_vector[waddr] = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
+            bias[waddr] = ( sc_int <32> ) (mantisa >> (127 - exponent));
 
             break;
 
@@ -70,9 +84,10 @@ void myip::run() {
         case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
             raddr = (axi_raddr - BIAS_OFFSET) >> 2;
 			if (registers[1] == 0x80)
-				dataout = (sc_int <32 >) bias[raddr+1];
+				dataout = (sc_int <32>) bias[raddr];
 			else
-				dataout = (sc_int <32 >) bias[raddr];
+				dataout = (sc_int <32>) 0;
+				dataout |= fixed_point_vector[raddr];
             break;
 
         default:
