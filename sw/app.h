@@ -5,7 +5,7 @@
 #define INPUT_MASK_WIDTH        11
 #define INPUT_MASK_HEIGHT       11
 #define INPUT_STRIDE    4
-#define LAYER_SIZE      96
+#define LAYER_SIZE      16
 #define WEIGHT_WIDTH    8
 #define OUTPUT_WIDTH    8
 #define OUTPUT_SHIFT    6

@@ -319,8 +319,6 @@ int myip::run_distort() {
 
 	int wd = 0;
 
-	sc_uint < OUTPUT_WIDTH > audio_out;
-
 	for (wd = 0; wd < LAYER_SIZE; wd++) {
 		output_tensor[wd] = ~ bias[wd];
 	}
