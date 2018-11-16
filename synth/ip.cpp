@@ -35,9 +35,11 @@ void myip::run() {
     unsigned int raddr =  axi_raddr >> 2;
 
 	signed exponent;
-	unsigned mantisa;
+	unsigned mantissa;
+    sc_uint <32> shifted_mantissa;
 	
     int mask;
+    int i1;
 
     sc_uint <32> dataout;
 
@@ -57,10 +59,22 @@ void myip::run() {
         case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
             waddr = (axi_waddr - BIAS_OFFSET) >> 2;
 			exponent = (axi_data & ~(1 << 31)) >> 23; // Get exponent from float
-			mantisa = axi_data << 8; // Get mantisa from float and set 1 bit in front of it
-			mantisa |= (1 << 31); // Set first bit to 1
-			fixed_point_vector[waddr] = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
-            bias[waddr] = ( sc_int <32> ) (mantisa >> (127 - exponent));
+			mantissa = axi_data << 8; // Get mantissa from float and set 1 bit in front of it
+			mantissa |= (1 << 31); // Set first bit to 1
+
+            shifted_mantissa = (sc_uint<32>) mantissa >> (127 - exponent);
+
+            // Bitwise copy the shifted mantissa
+            for(i1 = 0; i1 < 32; i1++)
+                if (shifted_mantissa[i1] == 1)
+                    fixed_point_vector[waddr][i1] = 1;
+
+            fixed_point_vector[waddr] *= 0.42;
+
+            // Bitwise copy the fixed point vector
+            for(i1 = 0; i1 < 32; i1++)
+                if (fixed_point_vector[waddr][i1] == 1)
+                    bias[waddr][i1] = 1;
 
             break;
 
@@ -83,12 +97,13 @@ void myip::run() {
 
         case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
             raddr = (axi_raddr - BIAS_OFFSET) >> 2;
-			if (registers[1] == 0x80)
-				dataout = (sc_int <32>) bias[raddr];
-			else
-				dataout = (sc_int <32>) 0;
-				dataout |= fixed_point_vector[raddr];
-            break;
+            dataout = bias[raddr];
+			// if (registers[1] == 0x80)
+			// 	dataout = (sc_int <32>) bias[raddr];
+			// else
+			// 	dataout = (sc_int <32>) 0;
+			// 	dataout |= fixed_point_vector[raddr];
+   //          break;
 
         default:
             break;

@@ -44,7 +44,7 @@ int main ()
     for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
         // BIASRAM[i] = j;
-        print_str("char = "); print_hex_uint(j); print_str("\n");
+        print_str("char = "); print_int(j); print_str("\n");
     }
 
 	SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
