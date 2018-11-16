@@ -88,7 +88,7 @@ public:
         bias_mem.read_file( "places205CNN_conv1_bias.txt", 0 , STR2INT);
         filter_mem.read_file( "places205CNN_conv1_filter.txt", 0 , STR2INT);
         input_mem.read_file( "input_data.txt", 0 , STR2UINT);
-        output_mem.read_file( "output_data.golden.txt", 0 , STR2UINT);
+        // output_mem.read_file( "output_data.golden.txt", 0 , STR2UINT);
 
     }
 
@@ -97,7 +97,7 @@ public:
         bias_mem.write_file( "places205CNN_conv1_bias.out", 0 ,  bias_mem.elem, 0, INT2STR);
         filter_mem.write_file( "places205CNN_conv1_filter.out", 0 ,  filter_mem.elem, 0, INT2STR);
         input_mem.write_file( "input_data.out", 0 ,  input_mem.elem, 0xFF, UINT2STR);
-        output_mem.write_file( "output_data.golden.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
+        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
     }
 
 
