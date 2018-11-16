@@ -39,7 +39,7 @@ int main ()
     // }
 
     for (i = 0; i < 16; i++){
-        print_str("input = "); print_char(INPUTRAM[i]); print_str("\n");
+        print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
         SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = INPUTRAM[i];
     }
 	

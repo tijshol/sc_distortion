@@ -320,11 +320,10 @@ int myip::run_distort() {
 	int wd = 0;
 
 	for (wd = 0; wd < LAYER_SIZE; wd++) {
-        output_tensor[wd] = 0;
-        output_tensor[wd][OUTPUT_WIDTH - 1] = 1;
-
-        if (bias[wd][WEIGHT_WIDTH - 1] == 0)
-		  output_tensor[wd] -= 1;
+        if (bias[wd][WEIGHT_WIDTH - 1] == 1)
+		  output_tensor[wd] = 0x80000000;
+        else
+          output_tensor[wd] = 0x7FFFFFFF;
 	}
 	return(1);
 }
