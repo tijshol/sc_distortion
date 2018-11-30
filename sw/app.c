@@ -26,7 +26,6 @@ int main ()
 
     print_str("Software begins\n");
     uint32_t i = 0, j = 0;
-
     // for (i = 0; i < 16; i++){
         // SYS_MEM32((SYS_AXI_BASE + (4*i) )) = i+1;
     // }
@@ -54,7 +53,7 @@ int main ()
 	for (i = 0; i < 4; i++){
         j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
         // BIASRAM[i] = j;
-        print_str("char = "); print_int(j); print_str("\n");
+        print_str("char = "); print_hex_uint(j); print_str("\n");
     }
 
     print_str("***********\nEVERYTHING IS DONE\n***********\n ");
