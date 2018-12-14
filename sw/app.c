@@ -66,7 +66,7 @@ int main ()
      for (i = 0; i < 16; i++){
         j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*i) ));
         OUTPUTRAM[i] = j;
-        print_str("output_tensor  = "); print_int(j); print_str("\n");
+        print_str("output_tensor  = "); print_hex_uint(j); print_str("\n");
     }
 
 
@@ -86,4 +86,3 @@ void handle_interrupt(void)
     print_str("***********\nIRQ received\n***********\n ");
     Iflag  = 0;
 }
-
