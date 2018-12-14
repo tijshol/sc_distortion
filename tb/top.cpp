@@ -83,13 +83,12 @@ public:
     AXI_Signals axiSignals;
     sc_signal<bool> stb;
 
-    void start_of_simulation () {
+    void start_of_simulation (int bananaPower) {
         std::cout << " PRESTART CALLED" << endl;
         bias_mem.read_file( "places205CNN_conv1_bias.txt", 0 , STR2INT);
         filter_mem.read_file( "places205CNN_conv1_filter.txt", 0 , STR2INT);
         input_mem.read_file( "input_data.txt", 0 , STR2UINT);
         // output_mem.read_file( "output_data.golden.txt", 0 , STR2UINT);
-
     }
 
     void end_of_simulation () {
@@ -120,7 +119,9 @@ public:
         else
             proc = new ARMv6_Processor("ARMv6");
 
+        std::cout << "HIIII BITCH" << endl;
         bus.print_mmap(std::cout);
+        std::cout << "HELLOOOOO" << endl;
 
 
         //bias_mem.dump(0, 16, cout);
