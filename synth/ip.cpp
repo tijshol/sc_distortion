@@ -22,6 +22,7 @@ int weight_pos  = 0;
 int r_weight_pos  = 0;
 
 sc_fixed_fast <32,1> fixed_point_vector [LAYER_SIZE];
+// sc_fixed_fast <32,1> 
 
 int rdone = 0;
 
@@ -64,6 +65,8 @@ void myip::run() {
 			mantisa |= (1 << 31); // Set first bit to 1
 			temp_float = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
 			fixed_point_vector[waddr] = sc_fix(temp_float>>31,32,1); // fixed point vector creation
+            if (axi_data & 1 << 31)
+                fixed_point_vector[waddr] *= -1; // negate if sign bit 1
             break;
         default:
             break;
@@ -123,11 +126,11 @@ int myip::run_distort() {
 	int wd = 0;
 
 	for (wd = 0; wd < LAYER_SIZE; wd++) {
-        if (fixed_point_vector[wd][32 - 1] == 1)
+        if (fixed_point_vector[wd][31] == 1)
 		  output_tensor[wd] = 0x80000000;
         else
           output_tensor[wd] = 0x7FFFFFFF;
-	}
+    }
 	return(1);
 }
 

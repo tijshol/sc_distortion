@@ -27,11 +27,13 @@ int main ()
     enableIRQ();
 
     print_str("Software begins\n");
-    uint32_t i = 0, j = 0;
+    uint32_t i = 0, ii = 0, j = 0;
 
-    for (i = 0; i < SYS_INPUT_RAM_SIZE/1000; i++){
-        // print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET)) = INPUTRAM[i];
+    while(i < SYS_INPUT_RAM_SIZE/1000) {
+        for(ii = 0; ii < LAYER_SIZE; ii++) { // transfer 1 chunk of 16
+            // print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
+            SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*ii))) = INPUTRAM[i+ii];
+        }
 
         SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
         // print_str("Start DISTORT \n");
@@ -42,9 +44,13 @@ int main ()
         SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
         // print_str("DISTORT Done\n");
 
-        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET ));
-        // print_str("output_tensor  = "); print_int(j); print_str("\n");
-        OUTPUTRAM[i] = j;
+        for(ii = 0; ii < LAYER_SIZE; ii++) {
+            j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*ii)));
+            // print_str("output_tensor  = "); print_int(j); print_str("\n");
+            OUTPUTRAM[i+ii] = j;
+        }
+
+        i+=LAYER_SIZE;
     }
 	
 	// for (i = 0; i < 4; i++){
