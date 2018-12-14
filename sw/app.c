@@ -29,45 +29,29 @@ int main ()
     print_str("Software begins\n");
     uint32_t i = 0, j = 0;
 
-    // for (i = 0; i < 16; i++){
-        // SYS_MEM32((SYS_AXI_BASE + (4*i) )) = i+1;
-    // }
+    for (i = 0; i < SYS_INPUT_RAM_SIZE/1000; i++){
+        // print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
+        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET)) = INPUTRAM[i];
 
-    // for (i = 0; i < 4; i++){
-    //     print_str("bias i = "); print_char(str[i]); print_str("\n");
-    //     SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = ((int) str[i]);
-    // }
+        SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
+        // print_str("Start DISTORT \n");
 
-    for (i = 0; i < 16; i++){
-        print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) )) = INPUTRAM[i];
-    }
-	
-    // for (i = 0; i < 16; i++){
-        // j = SYS_MEM32((SYS_AXI_BASE + (4*i) ));
-        // print_str("j = "); print_int(j); print_str("\n");
-    // }
+        while (Iflag);
 
-	SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
-    print_str("Start DISTORT \n");
+        SYS_MEM32((SYS_AXI_BASE ) ) = 0x00; // stop _cnn
+        SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
+        // print_str("DISTORT Done\n");
 
-    while (Iflag);
-
-    SYS_MEM32((SYS_AXI_BASE ) ) = 0x00; // stop _cnn
-    SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
-    print_str("DISTORT Done\n");
-	
-	for (i = 0; i < 4; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
-        // BIASRAM[i] = j;
-        print_str("char = "); print_char((char)j); print_str("\n");
-    }
-
-     for (i = 0; i < 16; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*i) ));
+        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET ));
+        // print_str("output_tensor  = "); print_int(j); print_str("\n");
         OUTPUTRAM[i] = j;
-        print_str("output_tensor  = "); print_hex_uint(j); print_str("\n");
     }
+	
+	// for (i = 0; i < 4; i++){
+    //     j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
+    //     // BIASRAM[i] = j;
+    //     print_str("char = "); print_char((char)j); print_str("\n");
+    // }
 
 
     print_str("***********\nEVERYTHING IS DONE\n***********\n ");

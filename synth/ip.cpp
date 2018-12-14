@@ -16,40 +16,10 @@ output_tensor_type output_tensor;
 // mask_region_tensor_type mask_region_tensor;
 // post_filter_tensor_type post_filter_tensor;
 
-
-// int n1  = 0;
-// int j11  = 0;
-// int k1  = 0;
-// int i1  = 0;
-
-// int j2  = 0;
-// int k2  = 0;
-// int i2  = 0;
-
-// int j3  = 0;
-// int k3  = 0;
-// int i3  = 0;
-
-// int j4  = 0;
-// int k4  = 0;
-// int i4  = 0;
-
-// int j5  = 0;
 int k5  = 0;
-// int i5  = 0;
-
-// int n6  = 0;
-// int j6  = 0;
-// int k6  = 0;
-// int i6  = 0;
 
 int weight_pos  = 0;
 int r_weight_pos  = 0;
-
-//sc_fxtype_params fxt(32,1);
-//sc_fxtype_context fcxt(fxt);
-
-//sc_fix fixed_point_vector [LAYER_SIZE];
 
 sc_fixed_fast <32,1> fixed_point_vector [LAYER_SIZE];
 
@@ -71,8 +41,6 @@ void myip::run() {
 
 	signed exponent;
 	unsigned mantisa;
-	
-    int mask;
 
     sc_uint <32> dataout;
 	sc_fixed <64,32> temp_float;
@@ -82,8 +50,6 @@ void myip::run() {
         switch (axi_waddr) {
 
         case 0 ... BIAS_OFFSET-1:
-            // mask = gen_select_mask();
-            //registers[waddr] = (registers[waddr] & (~mask)) | (axi_data & mask);
             registers[waddr] = axi_data + 21;
             if ( ((registers[0]) & 0x80)  == 0x80 ) {
                 run_distort();
@@ -96,10 +62,8 @@ void myip::run() {
 			exponent = (axi_data & ~(1 << 31)) >> 23; // Get exponent from float
 			mantisa = axi_data << 8; // Get mantisa from float and set 1 bit in front of it
 			mantisa |= (1 << 31); // Set first bit to 1
-			//fixed_point_vector[waddr] = sc_fix(4.5,32,16); // shift the mantisa by the exponent -127 (because that's how that shit works)
-			temp_float = mantisa >> (127 - exponent);
-            bias[waddr] = ( sc_int <32> ) (temp_float>>32);
-			fixed_point_vector[waddr] = sc_fix(temp_float>>31,32,1);
+			temp_float = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
+			fixed_point_vector[waddr] = sc_fix(temp_float>>31,32,1); // fixed point vector creation
             break;
         default:
             break;
@@ -113,8 +77,6 @@ void myip::run() {
         switch (axi_raddr) {
 
         case 0 ... BIAS_OFFSET-1:
-            // mask = gen_select_mask();
-            //dataout = registers[raddr] & mask;
             dataout = registers[raddr] ;
             break;
 
@@ -161,7 +123,7 @@ int myip::run_distort() {
 	int wd = 0;
 
 	for (wd = 0; wd < LAYER_SIZE; wd++) {
-        if (bias[wd][WEIGHT_WIDTH - 1] == 1)
+        if (fixed_point_vector[wd][32 - 1] == 1)
 		  output_tensor[wd] = 0x80000000;
         else
           output_tensor[wd] = 0x7FFFFFFF;
