@@ -89,7 +89,7 @@ void myip::run() {
         rdone = 0;
     }
 
-    interrupt.write(((registers[1]) & 0x80)  == 0x80 ) ;
+    interrupt.write(((registers[1]) & 0x80)  == 0x80 );
 }
 
 int myip::run_distort() {

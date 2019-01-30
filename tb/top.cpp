@@ -78,7 +78,7 @@ public:
     void start_of_simulation () {
         std::cout << " PRESTART CALLED" << endl;
         input_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
-        output_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
+        output_mem.read_file( "audio_data_out.txt", 0 , STR2FLOAT);
     }
 
     void end_of_simulation () {
