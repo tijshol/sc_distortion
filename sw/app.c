@@ -13,13 +13,10 @@
 
 #define halt()            DBGC_HALT = 1
 
-uint32_t *BIASRAM = (uint32_t *)SYS_BIAS_RAM_BASE;
 uint32_t *INPUTRAM = (uint32_t *)SYS_INPUT_RAM_BASE;
 uint32_t *OUTPUTRAM = (uint32_t *)SYS_OUTPUT_RAM_BASE;
 
 int Iflag  = 1;
-
-char str[5] = "dick";
 
 int main ()
 {
@@ -30,38 +27,35 @@ int main ()
     uint32_t i = 0, ii = 0, j = 0;
 
     while(i < SYS_INPUT_RAM_SIZE/1000) {
-        for(ii = 0; ii < LAYER_SIZE; ii++) { // transfer 1 chunk of 16
-            // print_str("input = "); print_int(INPUTRAM[i]); print_str("\n");
-            SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*ii))) = INPUTRAM[i+ii];
+        
+        print_str("INPUTRAM["); print_int(i+ii); print_str("] = "); print_hex_uint(INPUTRAM[i+ii]); print_str("\n");
+        for(ii = 0; ii < INPUT_SIZE; ii++) { // transfer 1 chunk of INPUT_SIZE
+            SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET + (4*ii))) = INPUTRAM[i+ii];
         }
 
-        SYS_MEM32((SYS_AXI_BASE ) ) = 0x80; // run_cnn
-        // print_str("Start DISTORT \n");
+        SYS_MEM32((SYS_AXI_BASE ) ) = 0x80;
+        print_str("Start DISTORT \n");
 
         while (Iflag);
 
-        SYS_MEM32((SYS_AXI_BASE ) ) = 0x00; // stop _cnn
-        SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00; // stop _cnn
-        // print_str("DISTORT Done\n");
+        // SYS_MEM32((SYS_AXI_BASE ) ) = 0x00;
+        // SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00;
+        print_str("DISTORT Done\n");
 
-        for(ii = 0; ii < LAYER_SIZE; ii++) {
-            j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_TENSOR_OFFSET + (4*ii)));
-            // print_str("output_tensor  = "); print_int(j); print_str("\n");
+        print_str("OUTPUTRAM["); print_int(i+ii); print_str("] = "); print_hex_uint(OUTPUTRAM[i+ii]); print_str("\n");
+        for(ii = 0; ii < INPUT_SIZE; ii++) {
+            j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET + (4*ii)));
             OUTPUTRAM[i+ii] = j;
         }
 
-        i+=LAYER_SIZE;
+        Iflag  = 1;
+
+        i+=INPUT_SIZE;
     }
-	
-	// for (i = 0; i < 4; i++){
-    //     j = SYS_MEM32((SYS_AXI_BASE + BIAS_OFFSET + (4*i) ));
-    //     // BIASRAM[i] = j;
-    //     print_str("char = "); print_char((char)j); print_str("\n");
-    // }
 
+    disableIRQ();
 
-    print_str("***********\nEVERYTHING IS DONE\n***********\n ");
-
+    print_str("***********\nEVERYTHING IS DONE\n***********\n");
 
     halt ();
 
@@ -71,8 +65,9 @@ int main ()
 void handle_interrupt(void)
 {
     disableIRQ();
-    SYS_MEM32((SYS_AXI_BASE ) +0) = 0x00; // stop _cnn
-    SYS_MEM32((SYS_AXI_BASE ) +4) = 0x00; // stop _cnn
-    print_str("***********\nIRQ received\n***********\n ");
+    SYS_MEM32((SYS_AXI_BASE ) ) = 0x00;
+    SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00;
+    print_str("***********\nIRQ received\n***********\n");
     Iflag  = 0;
+    enableIRQ();
 }

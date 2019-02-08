@@ -4,25 +4,10 @@
 
 #undef ADEBUG
 
-unsigned registers[16];
+unsigned registers[NUM_REG];
 
-typedef sc_int <WEIGHT_WIDTH>  bias_vector_type [LAYER_SIZE] ;
-typedef sc_uint <OUTPUT_WIDTH > output_tensor_type [LAYER_SIZE] ;
-
-bias_vector_type bias;
-// weight_matrix_type weights;
-// input_tensor_type input_tensor;
-output_tensor_type output_tensor;
-// mask_region_tensor_type mask_region_tensor;
-// post_filter_tensor_type post_filter_tensor;
-
-int k5  = 0;
-
-int weight_pos  = 0;
-int r_weight_pos  = 0;
-
-sc_fixed_fast <32,1> fixed_point_vector [LAYER_SIZE];
-// sc_fixed_fast <32,1> 
+sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
+sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
 
 int rdone = 0;
 
@@ -43,14 +28,14 @@ void myip::run() {
 	signed exponent;
 	unsigned mantisa;
 
-    sc_uint <32> dataout;
-	sc_fixed <64,32> temp_float;
+    sc_uint <SAMPLE_SIZE> dataout;
+	sc_fixed <SAMPLE_SIZE * 2,SAMPLE_SIZE> temp_float;
 
     if (s_ip_wvalid.read() ) {
 
         switch (axi_waddr) {
 
-        case 0 ... BIAS_OFFSET-1:
+        case 0 ... INPUT_OFFSET-1:
             registers[waddr] = axi_data + 21;
             if ( ((registers[0]) & 0x80)  == 0x80 ) {
                 run_distort();
@@ -58,15 +43,15 @@ void myip::run() {
             }
             break;
 
-        case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
-            waddr = (axi_waddr - BIAS_OFFSET) >> 2;
-			exponent = (axi_data & ~(1 << 31)) >> 23; // Get exponent from float
+        case  INPUT_OFFSET ... OUTPUT_OFFSET-1 :
+            waddr = (axi_waddr - INPUT_OFFSET) >> 2;
+			exponent = (axi_data & ~(1 << (SAMPLE_SIZE-1))) >> 23; // Get exponent from float
 			mantisa = axi_data << 8; // Get mantisa from float and set 1 bit in front of it
-			mantisa |= (1 << 31); // Set first bit to 1
+			mantisa |= (1 << (SAMPLE_SIZE-1)); // Set first bit to 1
 			temp_float = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
-			fixed_point_vector[waddr] = sc_fix(temp_float>>31,32,1); // fixed point vector creation
+			fixed_point_input[waddr] = sc_fix(temp_float>>(SAMPLE_SIZE-1),SAMPLE_SIZE,1); // fixed point vector creation
             if (axi_data & 1 << 31)
-                fixed_point_vector[waddr] *= -1; // negate if sign bit 1
+                fixed_point_input[waddr] *= -1; // negate if sign bit 1
             break;
         default:
             break;
@@ -79,30 +64,18 @@ void myip::run() {
     if (s_ip_rvalid.read() && rdone == 0) {
         switch (axi_raddr) {
 
-        case 0 ... BIAS_OFFSET-1:
+        case 0 ... INPUT_OFFSET-1:
             dataout = registers[raddr] ;
             break;
 
-        case  BIAS_OFFSET ... WEIGHT_OFFSET-1 :
-            raddr = (axi_raddr - BIAS_OFFSET) >> 2;
-			if (registers[1] == 0x80)
-				dataout = (sc_int <32>) bias[raddr];
-			else
-			{
-				dataout = 0;
-				temp_float = fixed_point_vector[raddr]*100;
-				dataout = fixed_point_vector[raddr]*100;
-			}
+        case INPUT_OFFSET ... OUTPUT_OFFSET-1 :
+            raddr = (axi_raddr - INPUT_OFFSET) >> 2;
+            dataout = fixed_point_input[raddr];
             break;
 
-        case OUTPUT_TENSOR_OFFSET ... (OUTPUT_TENSOR_OFFSET+OUTPUT_TENSOR_SIZE*4) -1 :
-            raddr = (axi_raddr - OUTPUT_TENSOR_OFFSET) >> 2;
-
-            dataout = output_tensor[k5];
-
-            k5 = k5 + 1;
-            if (k5 == LAYER_SIZE)
-                k5 = 0;
+        case OUTPUT_OFFSET ... (OUTPUT_OFFSET + OUTPUT_SIZE*4)-1 :
+            raddr = (axi_raddr - OUTPUT_OFFSET) >> 2;
+            dataout = fixed_point_output[raddr];
             break;
 
         default:
@@ -118,31 +91,18 @@ void myip::run() {
         rdone = 0;
     }
 
-    interrupt.write(((registers[1]) & 0x80)  == 0x80 ) ;
+    interrupt.write(((registers[1]) & 0x80)  == 0x80 );
 }
 
 int myip::run_distort() {
 
-	int wd = 0;
+	int i = 0;
 
-	for (wd = 0; wd < LAYER_SIZE; wd++) {
-        if (fixed_point_vector[wd][31] == 1)
-		  output_tensor[wd] = 0x80000000;
+	for (i = 0; i < INPUT_SIZE; i++) {
+        if (fixed_point_input[i][SAMPLE_SIZE - 1] == 1)
+		  fixed_point_output[i] = 1;
         else
-          output_tensor[wd] = 0x7FFFFFFF;
-    }
+          fixed_point_output[i] = -1;
+	}
 	return(1);
 }
-
-// int myip::gen_select_mask() {
-//     int mask = 0;
-//     int select = s_ip_wstrb.read();
-//     for (int i = 0; i < 4; ++i) {
-//         mask = mask << 8;
-//         if (select & 8) {
-//             mask |= 0xFF;
-//         }
-//         select = select << 1;
-//     }
-//     return(mask);
-// }

@@ -8,8 +8,9 @@
 
 #include <sys/types.h>
 #include <inttypes.h>
+#include "mmap.h"
 
-#define DBGC_ADDRESS        0x40000000
+#define DBGC_ADDRESS        SYS_CONS_BASE
 
 #define DBGC_PUT_CHAR       *((volatile uint8_t*)  (DBGC_ADDRESS + 0))
 #define DBGC_PUT_DEC_INT8   *((volatile uint8_t*) (DBGC_ADDRESS + 4))
