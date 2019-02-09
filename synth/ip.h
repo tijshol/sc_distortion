@@ -30,6 +30,8 @@ SC_MODULE (myip)
     void run();
     // int gen_select_mask();
     int run_distort();
+    sc_fixed_fast <SAMPLE_SIZE,1> float2fixed(unsigned input);
+    unsigned fixed2float(sc_fixed_fast <SAMPLE_SIZE,1> output);
 
     SC_CTOR(myip)
     {
