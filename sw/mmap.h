@@ -9,7 +9,7 @@
 
 // #define  SYS_IRQC_BASE          0x17000000
 #define  SYS_IRQC_BASE          (SYS_MEM_BASE + SYS_MEM_SIZE)
-#define  SYS_IRQC_SIZE          0x000FFFF
+#define  SYS_IRQC_SIZE          0x0000FFFF
 
 // #define  SYS_CONS_BASE          0x40000000
 #define  SYS_CONS_BASE          (SYS_IRQC_BASE + SYS_IRQC_SIZE)

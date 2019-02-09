@@ -78,13 +78,13 @@ public:
     void start_of_simulation () {
         std::cout << " PRESTART CALLED" << endl;
         input_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
-        output_mem.read_file( "audio_data_out.txt", 0 , STR2FLOAT);
+        output_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
     }
 
     void end_of_simulation () {
         std::cout << " PRESTOP CALLED" << endl;
         // input_mem.write_file( "input_data.out", 0 ,  input_mem.elem, 0xFF, FLOAT2STR);
-        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
+        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, FLOAT2STR);
     }
 
 

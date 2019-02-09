@@ -24,29 +24,31 @@ int main ()
     enableIRQ();
 
     print_str("Software begins\n");
-    uint32_t i = 0, j = 0,corrected_ram = 0;
+    uint32_t i = 0, j = 0,corrected_ram = 0,l = 0;
 
-    for (i = 5; i < 16; i++){
+    for (i = 0; i < 16; i++){
         corrected_ram = (INPUTRAM[i]<<16)|(INPUTRAM[i]>>16);
-        print_str("input = "); print_hex_uint(corrected_ram); print_str("\n");
-        SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET)) = corrected_ram;
+        SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i) = corrected_ram;
+    }
 
-        SYS_MEM32((SYS_AXI_BASE ) ) = 0x80;
-        print_str("Start DISTORT \n");
+    for (i = 0; i < 16; i++){
+        j = SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i);
+    }
 
-        while (Iflag);
+    SYS_MEM32((SYS_AXI_BASE )) = 0x80;
+    print_str("Start DISTORT \n");
+    
+    while (Iflag);
+    print_str("DISTORT Done\n");
 
-        // SYS_MEM32((SYS_AXI_BASE ) ) = 0x00;
-        // SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00;
-        print_str("DISTORT Done\n");
+    for (i = 0; i < 16; i++){
+        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET) + i);
+        corrected_ram = (j<<16)|(j>>16);
+        OUTPUTRAM[i] = corrected_ram;
+    }
 
-        // print_hex_uint((SYS_AXI_BASE + OUTPUT_OFFSET - SYS_AXI_BASE - OUTPUT_OFFSET)>>2);
-        print_str("\n");
-        j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET));
-        print_str("output  = "); print_int(j); print_str("\n");
-        OUTPUTRAM[i] = j;
-        
-        Iflag  = 1;
+    for (l=0; l<16; l++){
+        print_str("output  = "); print_hex_uint(OUTPUTRAM[l]); print_str("\n");
     }
 
     disableIRQ();
@@ -61,9 +63,8 @@ int main ()
 void handle_interrupt(void)
 {
     disableIRQ();
-    SYS_MEM32((SYS_AXI_BASE ) ) = 0x00;
-    SYS_MEM32((SYS_AXI_BASE + 4) ) = 0x00;
+    SYS_MEM32((SYS_AXI_BASE )+0 ) = 0x00;
+    SYS_MEM32((SYS_AXI_BASE )+1 ) = 0x00;
     print_str("***********\nIRQ received\n***********\n");
     Iflag  = 0;
-    enableIRQ();
 }

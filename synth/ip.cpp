@@ -25,11 +25,16 @@ void myip::run() {
     unsigned int waddr =  axi_waddr >> 2;
     unsigned int raddr =  axi_raddr >> 2;
 
-	signed exponent;
-	unsigned mantisa;
+	signed int exponent;
+	unsigned int mantisa;
+    bool sign = false;
+
+    sc_bv_base fraction(32);
+    int n = 0;
 
     sc_uint <SAMPLE_SIZE> dataout;
 	sc_fixed <SAMPLE_SIZE * 2,SAMPLE_SIZE> temp_float;
+    sc_bv <SAMPLE_SIZE> temp_bv;
 
     if (s_ip_wvalid.read() ) {
 
@@ -49,7 +54,10 @@ void myip::run() {
 			mantisa = axi_data << 8; // Get mantisa from float and set 1 bit in front of it
 			mantisa |= (1 << (SAMPLE_SIZE-1)); // Set first bit to 1
 			temp_float = mantisa >> (127 - exponent); // shift the mantisa by the exponent -127 (because that's how that shit works)
-			fixed_point_input[waddr] = sc_fix(temp_float>>(SAMPLE_SIZE-1),SAMPLE_SIZE,1); // fixed point vector creation
+            if ((axi_data>>31) == 1)
+			    fixed_point_input[waddr] = sc_fix(-temp_float>>(SAMPLE_SIZE-1),SAMPLE_SIZE,1); // fixed point vector creation
+            else
+                fixed_point_input[waddr] = sc_fix(temp_float>>(SAMPLE_SIZE-1),SAMPLE_SIZE,1); // fixed point vector creation    
             break;
         default:
             break;
@@ -68,12 +76,25 @@ void myip::run() {
 
         case INPUT_OFFSET ... OUTPUT_OFFSET-1 :
             raddr = (axi_raddr - INPUT_OFFSET) >> 2;
-            dataout = fixed_point_input[raddr];
+            dataout = fixed_point_input[raddr]*1000;
             break;
 
         case OUTPUT_OFFSET ... (OUTPUT_OFFSET + OUTPUT_SIZE*4)-1 :
             raddr = (axi_raddr - OUTPUT_OFFSET) >> 2;
-            dataout = fixed_point_output[raddr];
+            // convert back to float
+            fraction = fixed_point_output[raddr].range(31,0); // Get fixed point in bit vector
+            mantisa = fraction.to_uint(); // convert bit vector to uint
+            if (fixed_point_output[raddr].is_neg()){ // if the fixed point is negative
+                mantisa = ~mantisa + 1; // correct for tow's complement
+                sign = true; // and set sign bit
+            }
+            while ((mantisa & 0x80000000) != 0x80000000) { // check if fisrt bit is one (the "invisible" one preceding the mantisa)
+                mantisa <<= 1; // if not shift the mantissa to the left once
+                n++; // this number keeps track of the number of shifts
+            }
+            mantisa = (mantisa >> 8) & 0x7FFFFF; // move the mantisa to the end and remove the first "invisible" one
+            exponent = -n+127; // calculate exponent
+            dataout = (sign << 31) | (exponent << 23) | mantisa; // put everything together
             break;
 
         default:
@@ -97,10 +118,12 @@ int myip::run_distort() {
 	int i = 0;
 
 	for (i = 0; i < INPUT_SIZE; i++) {
-        if (fixed_point_input[i][SAMPLE_SIZE - 1] == 1)
-		  fixed_point_output[i] = 1;
+        if (fixed_point_input[i]>0.5)
+		    fixed_point_output[i] = 0.5;
+        else if (fixed_point_input[i]<-0.5)
+           fixed_point_output[i] = -0.5;
         else
-          fixed_point_output[i] = -1;
+            fixed_point_output[i] = fixed_point_input[i];
 	}
 	return(1);
 }

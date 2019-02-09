@@ -2,7 +2,7 @@
 
 #define SAMPLE_RATE   48000 // kHz
 #define SAMPLE_MULT   1
-#define SAMPLE_DIV    2
+#define SAMPLE_DIV    3000 // 48000/16 = 3000
 #define INPUT_SIZE    (( SAMPLE_RATE / SAMPLE_DIV ) *  SAMPLE_MULT)
 #define OUTPUT_SIZE   (INPUT_SIZE)
 
