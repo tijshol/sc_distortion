@@ -25,13 +25,6 @@ void myip::run() {
     unsigned int waddr =  axi_waddr >> 2;
     unsigned int raddr =  axi_raddr >> 2;
 
-	signed int exponent;
-	unsigned int mantisa;
-    bool sign = false;
-
-    sc_bv_base fraction(32);
-    int n = 0;
-
     sc_uint <SAMPLE_SIZE> dataout;
 
     if (s_ip_wvalid.read() ) {
