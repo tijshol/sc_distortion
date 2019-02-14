@@ -27,7 +27,7 @@ public:
 
     sc_in<bool> clk;
     sc_in<bool> resetn;
-    sc_in<bool> interrupt;
+    sc_in<bool> interrupt_request;
 
     sc_out<bool > go;
     sc_out<bool > rnw;

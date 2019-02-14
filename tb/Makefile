@@ -93,12 +93,12 @@ ifeq (${O},MacOSX)
 	V = llvm
 endif
 
-DEFS := -DSC_INCLUDE_DYNAMIC_PROCESSES -D__RTL_SIMULATION__ -DSC_INCLUDE_FX
-DEFS := -DSC_INCLUDE_DYNAMIC_PROCESSES -DSC_INCLUDE_FX
+DEFS := -DSC_INCLUDE_DYNAMIC_PROCESSES -D__RTL_SIMULATION__
+DEFS := -DTRACE -DSC_INCLUDE_DYNAMIC_PROCESSES
 
 # The pre-processor and compiler options.
 MY_CFLAGS = $(DEFS) -I. -I./axi -I$(SIMSOC)/include/libsimsoc -I$(SIMSOC)/include/ -I$(SYSTEMC)/include -DAESL_APATB_EXPORT -DAPATB_EXPORT   -I "/opt/eds/Xilinx/Vivado_HLS/2016.4/include" -I "/opt/eds/Xilinx/Vivado_HLS/2016.4/common/technology/generic/SystemC" -I "/opt/eds/Xilinx/Vivado_HLS/2016.4/lnx64/tools/auto_cc/include"  -I "../VLSIProject/solution1/syn/systemc/"
-MY_CFLAGS = $(DEFS) -I. -I./axi -I$(SIMSOC)/include/libsimsoc -I$(SIMSOC)/include/ -I$(SYSTEMC)/include 
+MY_CFLAGS = $(DEFS) -I. -I../sw -I./axi -I$(SIMSOC)/include/libsimsoc -I$(SIMSOC)/include/ -I$(SYSTEMC)/include 
 #
 #
 # The linker options.
@@ -107,7 +107,7 @@ MY_LIBS   = -lsimsoc -lsystemc -lm -lpthread -lmpfr -lgmp
 
 # The pre-processor options used by the cpp (man cpp for more).
 CPPFLAGS  = -Wall -Wno-reorder -Wno-unused-but-set-variable
-CPPFLAGS  = -Wall -Wno-reorder -Wno-unused-but-set-variable -std=c++98 
+CPPFLAGS  = -Wall -Wno-reorder -Wno-unused-but-set-variable -std=c++98  -Wno-unused-label
 
 
 # The options used in linking as well as in any direct use of ld.
@@ -118,7 +118,7 @@ LDFLAGS   = -L. -L$(SYSTEMC)/lib-$(TARGET_ARCH) -L$(SIMSOC)/lib-$(TARGET_ARCH) -
 # The directories in which source files reside.
 # If not specified, only the current directory will be serached.
 SRCDIRS   = ../tb ../tb/axi ../VLSIProject/solution1/syn/systemc
-SRCDIRS   = ../tb ../synth ../tb/axi 
+SRCDIRS   = ../tb ../synth ../tb/axi  ../tb/tbsrc
 
 # The executable file name.
 # If not specified, current directory name or `a.out' will be used.

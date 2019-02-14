@@ -30,17 +30,23 @@ void axi_lite_master_transaction_model::state_machine_decisions() {
         busy.write((bool)(0 ));
         if (go.read() == 1) {
 
-            switch (rnw.read()) {
-            case 1 :
-                next_state.write((lmt_fsm_type)(READ_TRANSACTION ));
-                break;
-            case 0 :
-                next_state.write((lmt_fsm_type)(WRITE_TRANSACTION ));
-                break;
-            default :
-                break;
+//            switch (rnw.read()) {
+//            case 1 :
+//                next_state.write((lmt_fsm_type)(READ_TRANSACTION ));
+//                break;
+//            case 0 :
+//                next_state.write((lmt_fsm_type)(WRITE_TRANSACTION ));
+//                break;
+//            default :
+//                break;
+//
+//            }
 
-            }
+            if (rnw.read()) 
+                next_state.write((lmt_fsm_type)(READ_TRANSACTION ));
+            else 
+                next_state.write((lmt_fsm_type)(WRITE_TRANSACTION ));
+
         } break;
     case READ_TRANSACTION :
         next_state.write((lmt_fsm_type)(READ_TRANSACTION ));

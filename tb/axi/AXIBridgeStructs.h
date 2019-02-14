@@ -16,7 +16,7 @@ struct AXI_Signals {
     sc_signal<sc_uint<32> > write_data;
     sc_signal<sc_uint<32> > read_data;
 
-    sc_signal<bool > interrupt;
+    sc_signal<bool > interrupt_request;
 
     sc_signal<bool > axi_lite_arready;
     sc_signal<bool > axi_lite_rvalid;

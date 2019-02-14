@@ -1,4 +1,11 @@
 #include "axiBridge.h"
+#include "../../sw/mmap.h"
+
+extern "C" {
+void write_transaction(int a, int d);
+void read_transaction(int a);
+}
+
 
 using namespace std;
 
@@ -24,10 +31,16 @@ void AXIBridge::axiBusHandling() {
             // write data
             if (pl->get_data_length() == 1) {
                 write_data.write((uint32_t) *(uint8_t*) pl->get_data_ptr());
+#ifndef COSIM_SYSTEMC
+write_transaction(pl->get_address()+SYS_AXI_BASE, (uint32_t) *(uint8_t*) pl->get_data_ptr());
+#endif
             } else {
                 write_data.write(*(uint32_t*) pl->get_data_ptr());
+#ifndef COSIM_SYSTEMC
+write_transaction(pl->get_address()+SYS_AXI_BASE, *(uint32_t*) pl->get_data_ptr());
+#endif
             }
-            address.write(pl->get_address());
+            address.write(pl->get_address()+SYS_AXI_BASE);
             rnw.write(false);
             go.write(true);
             wait(clk_cycle);
@@ -37,7 +50,10 @@ void AXIBridge::axiBusHandling() {
             }
         } else if (pl->get_command() == tlm::TLM_READ_COMMAND) {
             // read data
-            address.write(pl->get_address());
+#ifndef COSIM_SYSTEMC
+	read_transaction(pl->get_address()+SYS_AXI_BASE);
+#endif
+            address.write(pl->get_address()+SYS_AXI_BASE);
             rnw.write(true);
             go.write(true);
             wait(clk_cycle);
@@ -72,8 +88,8 @@ void AXIBridge::b_transport(tlm::tlm_generic_payload &payload, sc_core::sc_time 
 void AXIBridge::updateirq() {
     while (true) {
         wait(clk_cycle);
-        it_signal = interrupt.read();
+        it_signal = interrupt_request.read();
         //if (it_signal != 0)
-        //std::cout << "interrupt read at " <<  it_signal << std::endl;
+        //std::cout << "interrupt_request read at " <<  it_signal << std::endl;
     }
 }
