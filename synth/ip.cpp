@@ -60,7 +60,7 @@ void myip::run() {
 
         case INPUT_OFFSET ... OUTPUT_OFFSET-1 :
             raddr = (axi_raddr - INPUT_OFFSET) >> 2;
-            dataout = fixed_point_input[raddr]*1000;
+            dataout = fixed2float(fixed_point_input[raddr]);
             break;
 
         case OUTPUT_OFFSET ... (OUTPUT_OFFSET + OUTPUT_SIZE*4)-1 :

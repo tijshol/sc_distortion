@@ -24,15 +24,11 @@ int main ()
     enableIRQ();
 
     print_str("Software begins\n");
-    uint32_t i = 0, j = 0,corrected_ram = 0,l = 0;
+    uint32_t i = 0, j = 0,corrected_ram = 0;
 
-    for (i = 0; i < 16; i++){
+    for (i = 0; i < INPUT_SIZE; i++){
         corrected_ram = (INPUTRAM[i]<<16)|(INPUTRAM[i]>>16);
         SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i) = corrected_ram;
-    }
-
-    for (i = 0; i < 16; i++){
-        j = SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i);
     }
 
     SYS_MEM32((SYS_AXI_BASE )) = 0x80;
@@ -41,14 +37,10 @@ int main ()
     while (Iflag);
     print_str("DISTORT Done\n");
 
-    for (i = 0; i < 16; i++){
+    for (i = 0; i < INPUT_SIZE; i++){
         j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET) + i);
         corrected_ram = (j<<16)|(j>>16);
         OUTPUTRAM[i] = corrected_ram;
-    }
-
-    for (l=0; l<16; l++){
-        print_str("output  = "); print_hex_uint(OUTPUTRAM[l]); print_str("\n");
     }
 
     disableIRQ();
