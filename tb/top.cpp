@@ -54,12 +54,6 @@ public:
     static const uint32_t MEM_BASE = SYS_MEM_BASE;
     static const uint32_t MEM_SIZE = SYS_MEM_SIZE;
 
-    static const uint32_t BIAS_RAM_BASE = SYS_BIAS_RAM_BASE;
-    static const uint32_t BIAS_RAM_SIZE = SYS_BIAS_RAM_SIZE*4;
-
-    static const uint32_t FILTER_RAM_BASE = SYS_FILTER_RAM_BASE;
-    static const uint32_t FILTER_RAM_SIZE = SYS_FILTER_RAM_SIZE*4;
-
     static const uint32_t INPUT_RAM_BASE = SYS_INPUT_RAM_BASE;
     static const uint32_t INPUT_RAM_SIZE = SYS_INPUT_RAM_SIZE*4;
 
@@ -78,8 +72,6 @@ public:
     Bus bus;
     Memory mem;
 
-    Memory bias_mem;
-    Memory filter_mem;
     Memory input_mem;
     Memory output_mem;
 
@@ -97,10 +89,8 @@ public:
 
     void start_of_simulation () {
         std::cout << " PRESTART CALLED" << endl;
-        bias_mem.read_file( "places205CNN_conv1_bias.txt", 0 , STR2INT);
-        filter_mem.read_file( "places205CNN_conv1_filter.txt", 0 , STR2INT);
-        input_mem.read_file( "input_data.txt", 0 , STR2UINT);
-        //output_mem.read_file( "output_data.golden.txt", 0 , STR2UINT);
+        input_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
+        output_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
 #ifndef COSIM_SYSTEMC
 	head();
 #endif
@@ -109,11 +99,8 @@ public:
 
     void end_of_simulation () {
         std::cout << " PRESTOP CALLED" << endl;
-        bias_mem.write_file( "places205CNN_conv1_bias.out", 0 ,  bias_mem.elem, 0, INT2STR);
-        filter_mem.write_file( "places205CNN_conv1_filter.out", 0 ,  filter_mem.elem, 0, INT2STR);
-        input_mem.write_file( "input_data.out", 0 ,  input_mem.elem, 0xFF, UINT2STR);
-        //output_mem.write_file( "output_data.golden.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
-        output_mem.write_file( "output_data.golden.out", 0 ,  OUTPUT_RAM_SIZE/4, 0xFF, UINT2STR);
+        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
+        // output_mem.write_file( "output_data.out", 0 ,  OUTPUT_RAM_SIZE/4, 0xFF, FLOAT2STR);
 #ifndef COSIM_SYSTEMC
 	tail();
 #endif
@@ -123,10 +110,15 @@ public:
     SubSystem(sc_module_name name, StopBox *sb, sc_time &clock_cycle) :
             Module(name),
             // module instantiation
-            bus("BUS"), mem("MEMORY", MEM_SIZE), bias_mem ("BIAS_MEM", BIAS_RAM_SIZE), filter_mem ("FILTER_MEM", FILTER_RAM_SIZE) ,
-            input_mem("INPUT_DATA_MEM", INPUT_RAM_SIZE), output_mem("OUTPUT_DATA_MEM", OUTPUT_RAM_SIZE),
-            cons("CONSOLE", sb), irqc("IRQC"), proc(NULL),
-            axiBridge("AXIBridge", main_context().is_big_endian(), clock_cycle), axi_master("axi_master"),
+            bus("BUS"),
+            mem("MEMORY", MEM_SIZE),
+            input_mem("INPUT_DATA_MEM", INPUT_RAM_SIZE),
+            output_mem("OUTPUT_DATA_MEM", OUTPUT_RAM_SIZE),
+            cons("CONSOLE", sb),
+            irqc("IRQC"),
+            proc(NULL),
+            axiBridge("AXIBridge", main_context().is_big_endian(), clock_cycle),
+            axi_master("axi_master"),
 #ifdef MTI_SYSTEMC
             axi_slave("axi_slave","work.AXISlave"),
 #else
@@ -141,11 +133,6 @@ public:
 
         bus.print_mmap(std::cout);
 
-
-        //bias_mem.dump(0, 16, cout);
-        //filter_mem.dump(0, 16, cout);
-        //input_mem.dump(0, 16, cout);
-
         proc->get_rw_port()(bus.target_sockets);
 
         axiBridge.it_signal(irqc.in_signals[0]);
@@ -153,8 +140,6 @@ public:
 
         bus.bind_target(mem.rw_socket, MEM_BASE, MEM_SIZE);
 
-        bus.bind_target(bias_mem.rw_socket, BIAS_RAM_BASE, BIAS_RAM_SIZE);
-        bus.bind_target(filter_mem.rw_socket, FILTER_RAM_BASE, FILTER_RAM_SIZE);
         bus.bind_target(input_mem.rw_socket, INPUT_RAM_BASE, INPUT_RAM_SIZE);
         bus.bind_target(output_mem.rw_socket, OUTPUT_RAM_BASE, OUTPUT_RAM_SIZE);
 
@@ -287,9 +272,7 @@ int sc_main(int argc, char *argv[]) {
 
     sc_time clock_cycle(10, SC_NS);
 
-	fp_mask = fopen("mask_tensor.mem","w+");
-
-    simsoc_init(argc, argv);
+	simsoc_init(argc, argv);
     Top top("TOP", clock_cycle);
 
     sc_trace_file* fp( sc_create_vcd_trace_file( "tr" ) );

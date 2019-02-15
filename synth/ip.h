@@ -5,27 +5,12 @@
 #include "../sw/app.h"
 
 #define    AXI_ADDR_WIDTH                     32	// width of the AXI address bus
-// BIAS_VECTOR_TYPE
-typedef sc_int <WEIGHT_WIDTH>  bias_vector_type [LAYER_SIZE] ;
-// INPUT_TENSOR_TYPE
-typedef sc_int <INPUT_FEATURE_WIDTH >  input_tensor_type [INPUT_FEATURE_PLANE_HEIGHT] [INPUT_FEATURE_PLANE_WIDTH] [INPUT_NO_FEATURES] ;
-// MASK_REGION_TENSOR_TYPE
-typedef sc_int <INPUT_FEATURE_WIDTH > mask_region_tensor_type [INPUT_MASK_HEIGHT] [INPUT_MASK_WIDTH] [INPUT_NO_FEATURES] ;
-// OUTPUT_TENSOR_TYPE
-typedef sc_uint <OUTPUT_WIDTH > output_tensor_type [OUTPUT_TENSOR_HEIGHT] [OUTPUT_TENSOR_WIDTH] [LAYER_SIZE] ;
-// POST_FILTER_TENSOR_TYPE
-typedef sc_int <OUTPUT_WIDTH > post_filter_tensor_type [POST_FILTER_HEIGHT] [POST_FILTER_WIDTH] [LAYER_SIZE] ;
-// WEIGHT_MATRIX_TYPE
-typedef sc_int <WEIGHT_WIDTH>  weight_matrix_type [LAYER_SIZE] [NO_WEIGHTS] ;
 
 #ifndef __SYNTHESIS__
-extern unsigned registers[16];
-extern bias_vector_type bias;
-extern weight_matrix_type weights;
-extern input_tensor_type input_tensor;
-extern output_tensor_type output_tensor;
-extern mask_region_tensor_type mask_region_tensor;
-extern post_filter_tensor_type post_filter_tensor;
+extern unsigned registers[NUM_REG];
+
+extern sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
+extern sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
 #endif
 
 
@@ -50,12 +35,8 @@ SC_MODULE (myip)
     sc_out < bool > interrupt_request;
 	unsigned registers[16];
 #ifdef __SYNTHESIS__
-	bias_vector_type bias;
-	weight_matrix_type weights;
-	input_tensor_type input_tensor;
-	output_tensor_type output_tensor;
-	mask_region_tensor_type mask_region_tensor;
-	post_filter_tensor_type post_filter_tensor;
+    sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
+    sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
 #endif
 
     sc_signal < bool > cnn_start;
@@ -63,7 +44,9 @@ SC_MODULE (myip)
 
     void proc_ip();
     int gen_select_mask();
-    int run_cnn();
+    int run_distort();
+    sc_fixed_fast <SAMPLE_SIZE,1> float2fixed(unsigned input);
+    unsigned fixed2float(sc_fixed_fast <SAMPLE_SIZE,1> output);
 
     SC_CTOR(myip)
     {
