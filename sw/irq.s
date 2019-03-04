@@ -10,20 +10,19 @@ irq_handler:
 	/* sub r14, r14, #4 */
     push    {fp, lr}
 
-	stmfd sp!,{r0-r3,r12,r14}
+	stmfd sp!,{r0-r3,r12}
 /*
 	stmfd sp!,{lr}
 	stmfd sp!,{r0-r3}
 */
 
-	B  handle_interrupt
+	BL  handle_interrupt
 
-/*
-	ldmfd sp!,{r0-r3}
-	ldmfd sp!,{r12,r14}
+	@ ldm sp!,{r0-r3}
+/*	ldmfd sp!,{r12,r14}
 */
 
-	ldmfd sp!,{r0-r3,r12,pc}
+	ldmfd sp!,{r0-r3,r12}
 
     pop     {fp, pc}
 	.endfunc

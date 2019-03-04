@@ -29,7 +29,7 @@ int main ()
     for (i = 0; i < INPUT_SIZE; i++){
         corrected_ram = (INPUTRAM[i]<<16)|(INPUTRAM[i]>>16);
         SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i) = corrected_ram;
-    }
+    // }
 
     SYS_MEM32((SYS_AXI_BASE )) = 0x80;
     print_str("Start DISTORT \n");
@@ -37,7 +37,10 @@ int main ()
     while (Iflag);
     print_str("DISTORT Done\n");
 
-    for (i = 0; i < INPUT_SIZE; i++){
+    Iflag = 1;
+    enableIRQ();
+
+    // for (i = 0; i < INPUT_SIZE; i++){
         j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET) + i);
         corrected_ram = (j<<16)|(j>>16);
         OUTPUTRAM[i] = corrected_ram;
@@ -59,4 +62,5 @@ void handle_interrupt(void)
     SYS_MEM32((SYS_AXI_BASE )+1 ) = 0x00;
     print_str("***********\nIRQ received\n***********\n");
     Iflag  = 0;
+    // asm ("ADD	SP, SP, #0x20\n");
 }

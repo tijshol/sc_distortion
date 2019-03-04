@@ -99,7 +99,7 @@ public:
 
     void end_of_simulation () {
         std::cout << " PRESTOP CALLED" << endl;
-        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, UINT2STR);
+        output_mem.write_file( "output_data.out", 0 ,  output_mem.elem, 0xFF, FLOAT2STR);
         // output_mem.write_file( "output_data.out", 0 ,  OUTPUT_RAM_SIZE/4, 0xFF, FLOAT2STR);
 #ifndef COSIM_SYSTEMC
 	tail();

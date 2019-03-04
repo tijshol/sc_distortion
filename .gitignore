@@ -6,3 +6,4 @@
 sctop
 *.out
 tbsrc.vhd
+cmd_out.txt
