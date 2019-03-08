@@ -7,24 +7,13 @@ irq_handler:
 	/* Correct LR_irq; this is a quirk of how the ARM processor calls the
 	 * IRQ handler.  */
 	sub lr, lr, #4
-	/* sub r14, r14, #4 */
-    push    {fp, lr}
-
-	stmfd sp!,{r0-r3,r12}
-/*
-	stmfd sp!,{lr}
-	stmfd sp!,{r0-r3}
-*/
-
+	/* Store registers, frame pointer and Link register in stack */
+	stmfd sp!,{r0-r3,fp,r12,lr}
+	/* Execute interrupt handler function*/
 	BL  handle_interrupt
+	/* Load registers, frame pointer and Link register (to Program counter) from stack */
+	ldmfd sp!,{r0-r3,fp,r12,pc}
 
-	@ ldm sp!,{r0-r3}
-/*	ldmfd sp!,{r12,r14}
-*/
-
-	ldmfd sp!,{r0-r3,r12}
-
-    pop     {fp, pc}
 	.endfunc
 
 

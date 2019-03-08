@@ -1,1 +1,1 @@
-cd sw; make; cd ../tb; make; ./sctop ../sw/app.elf; cd ..
+cd sw; make; cd ../tb; make; ./sctop ../sw/app.elf -DT=2 -iq=20; cd ..

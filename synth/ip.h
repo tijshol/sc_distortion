@@ -9,8 +9,8 @@
 #ifndef __SYNTHESIS__
 extern unsigned registers[NUM_REG];
 
-extern sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
-extern sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
+extern sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_input [INPUT_SIZE];
+extern sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_output [OUTPUT_SIZE];
 #endif
 
 
@@ -35,8 +35,8 @@ SC_MODULE (myip)
     sc_out < bool > interrupt_request;
 	unsigned registers[16];
 #ifdef __SYNTHESIS__
-    sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
-    sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
+    sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_input [INPUT_SIZE];
+    sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_output [OUTPUT_SIZE];
 #endif
 
     sc_signal < bool > cnn_start;
@@ -44,9 +44,11 @@ SC_MODULE (myip)
 
     void proc_ip();
     int gen_select_mask();
-    int run_distort();
-    sc_fixed_fast <SAMPLE_SIZE,1> float2fixed(unsigned input);
-    unsigned fixed2float(sc_fixed_fast <SAMPLE_SIZE,1> output);
+    int run_clip();
+    int run_overdrive();
+    int run_distortion();
+    sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> float2fixed(unsigned input);
+    unsigned fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output);
 
     SC_CTOR(myip)
     {

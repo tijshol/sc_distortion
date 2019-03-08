@@ -89,8 +89,8 @@ public:
 
     void start_of_simulation () {
         std::cout << " PRESTART CALLED" << endl;
-        input_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
-        output_mem.read_file( "audio_data.txt", 0 , STR2FLOAT);
+        input_mem.read_file( "sine_cres.txt", 0 , STR2FLOAT);
+        output_mem.read_file( "sine_cres.txt", 0 , STR2FLOAT);
 #ifndef COSIM_SYSTEMC
 	head();
 #endif

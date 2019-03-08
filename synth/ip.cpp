@@ -6,8 +6,8 @@
 
 #ifndef __SYNTHESIS__
 
-sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_input [INPUT_SIZE];
-sc_fixed_fast <SAMPLE_SIZE,1> fixed_point_output [OUTPUT_SIZE];
+sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_input [INPUT_SIZE];
+sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> fixed_point_output [OUTPUT_SIZE];
 #endif
 
 void myip::proc_ip() {
@@ -99,7 +99,10 @@ void myip::proc_ip() {
             s_ip_rdata.write(0x0);
             if ( (((registers[0]) & 0x80)  == 0x80) && (((registers[1]) & 0x80)  == 0x00) ) {
                 wait();
-                run_distort();
+                if (((registers[0]) & 0x1) == 0x0)
+                    run_clip();
+                else if (((registers[0]) & 0x1) == 0x1)
+                    run_overdrive();
                 wait();
                 registers[0] &= ~0x80;
                 wait();
@@ -128,13 +131,13 @@ int myip::gen_select_mask() {
     }
     return(mask);
 }
-
-int myip::run_distort() {
+// Hard_clip
+int myip::run_clip() {
 
     int i = 0;
 
 #ifndef __SYNTHESIS__
-    printf("Begin Distrot \n");
+    // printf("Begin Distrot \n");
 #endif
     for (i = 0; i < INPUT_SIZE; i++) {
         if (fixed_point_input[i]>0.5)
@@ -145,18 +148,50 @@ int myip::run_distort() {
             fixed_point_output[i] = fixed_point_input[i];
 	}
 #ifndef __SYNTHESIS__
-    printf("\nEnd CNN \n");
+    // printf("\nEnd CNN \n");
 #endif
     return (1);
 }
 
-sc_fixed_fast <SAMPLE_SIZE,1> myip::float2fixed(unsigned input) {
+// Overdrive
+int myip::run_overdrive() {
+
+    int i = 0;
+    sc_fixed_fast <SAMPLE_SIZE,1> absolute;
+    sc_fixed_fast <SAMPLE_SIZE,2> th = 1; // Threshold
+    th = th/3;
+
+#ifndef __SYNTHESIS__
+    // printf("Begin Distrot \n");
+#endif
+    for (i = 0; i < INPUT_SIZE; i++) {
+        absolute = sc_abs(fixed_point_input[i]);
+        if (absolute < th)
+		    fixed_point_output[i] = 2 * fixed_point_input[i];
+        else if (absolute >= th && absolute < (2*th))
+            if (fixed_point_input[i] > 0)
+                fixed_point_output[i] = (3 - (2 - 3 * fixed_point_input[i]) * (2 - 3 * fixed_point_input[i])) / 3;
+            else
+                fixed_point_output[i] = -(3 - (2 - 3 * absolute) * (2 - 3 * absolute)) / 3;
+        else
+            if (fixed_point_input[i] > 0)
+                fixed_point_output[i] = 1;
+            else
+                fixed_point_output[i] = -1;
+	}
+#ifndef __SYNTHESIS__
+    // printf("\nEnd CNN \n");
+#endif
+    return (1);
+}
+
+sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> myip::float2fixed(unsigned input) {
 
     signed int exponent;
 	unsigned int mantisa;
 
-	sc_fixed <SAMPLE_SIZE * 2,SAMPLE_SIZE> largeFixed;
-    sc_fixed_fast <SAMPLE_SIZE,1> outputFixed;
+	sc_fixed <SAMPLE_SIZE * 2,SAMPLE_SIZE,SC_TRN,SC_SAT> largeFixed;
+    sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> outputFixed;
 
     exponent = (input & ~(1 << (SAMPLE_SIZE-1))) >> 23; // Get exponent from float
     mantisa = input << 8; // Get mantisa from float and set 1 bit in front of it
@@ -171,7 +206,7 @@ sc_fixed_fast <SAMPLE_SIZE,1> myip::float2fixed(unsigned input) {
     return(outputFixed);
 }
 
-unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1> output) {
+unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output) {
 
     signed int exponent;
 	unsigned int mantisa;
