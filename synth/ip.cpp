@@ -99,10 +99,14 @@ void myip::proc_ip() {
             s_ip_rdata.write(0x0);
             if ( (((registers[0]) & 0x80)  == 0x80) && (((registers[1]) & 0x80)  == 0x00) ) {
                 wait();
-                if (((registers[0]) & 0x1) == 0x0)
+                if (((registers[0]) & 0x1) == 0x1)
                     run_clip();
-                else if (((registers[0]) & 0x1) == 0x1)
+                else if (((registers[0]) & 0x2) == 0x2)
                     run_overdrive();
+                else if (((registers[0]) & 0x3) == 0x3)
+                    run_fuzz();
+                else
+                    run_default();
                 wait();
                 registers[0] &= ~0x80;
                 wait();
@@ -131,13 +135,37 @@ int myip::gen_select_mask() {
     }
     return(mask);
 }
-// Hard_clip
+
+// Default run function
+/*  This function defaults when a run is set by arm but no effect is selected
+    The function just returns the input
+*/
+int myip::run_default() {
+
+    int i = 0;
+
+#ifndef __SYNTHESIS__
+    printf("Begin default \n");
+#endif
+    for (i = 0; i < INPUT_SIZE; i++) {
+        fixed_point_output[i] = fixed_point_input[i];
+	}
+#ifndef __SYNTHESIS__
+    printf("\nEnd default \n");
+#endif
+    return (1);
+}
+
+// Hard clip function (not very musical)
+/*  This function clips the output audio to a threshold.
+    Fixed points are used for ease of comparison
+*/
 int myip::run_clip() {
 
     int i = 0;
 
 #ifndef __SYNTHESIS__
-    // printf("Begin Distrot \n");
+    printf("Begin clip \n");
 #endif
     for (i = 0; i < INPUT_SIZE; i++) {
         if (fixed_point_input[i]>0.5)
@@ -148,12 +176,18 @@ int myip::run_clip() {
             fixed_point_output[i] = fixed_point_input[i];
 	}
 #ifndef __SYNTHESIS__
-    // printf("\nEnd CNN \n");
+    printf("\nEnd clip \n");
 #endif
     return (1);
 }
 
 // Overdrive
+/*  This function performs the overdrive effect as described by David Marshall's slides on digital audio effects
+    The function has three regions of operation: 
+    - The first is around zero {-1/3,1/3} and simply increase the slope of the curve
+    - The seond rounds the curve using a second order polynominal {1/3,2/3}
+    - The last region keeps the function at 1 which means the signal will clip {2/3,1}
+*/
 int myip::run_overdrive() {
 
     int i = 0;
@@ -162,7 +196,7 @@ int myip::run_overdrive() {
     th = th/3;
 
 #ifndef __SYNTHESIS__
-    // printf("Begin Distrot \n");
+    printf("Begin overdrive \n");
 #endif
     for (i = 0; i < INPUT_SIZE; i++) {
         absolute = sc_abs(fixed_point_input[i]);
@@ -180,11 +214,29 @@ int myip::run_overdrive() {
                 fixed_point_output[i] = -1;
 	}
 #ifndef __SYNTHESIS__
-    // printf("\nEnd CNN \n");
+    printf("\nEnd overdrive \n");
 #endif
     return (1);
 }
 
+// Fuzz
+/*  
+*/
+int myip::run_fuzz() {
+
+#ifndef __SYNTHESIS__
+    printf("Begin fuzz \n");
+#endif
+    for (i = 0; i < INPUT_SIZE; i++) {
+        fied_point_output[i] = expm1(fixed_point_input[i],20) + 1;
+	}
+#ifndef __SYNTHESIS__
+    printf("\nEnd fuzz \n");
+#endif
+    return (1);
+}
+
+// Convert floating point variable (given as an unsigned int) to a fixed point variable
 sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> myip::float2fixed(unsigned input) {
 
     signed int exponent;
@@ -206,6 +258,7 @@ sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> myip::float2fixed(unsigned input) {
     return(outputFixed);
 }
 
+// Convert fixed point variable to floating point (given as an unsigned int)
 unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output) {
 
     signed int exponent;
@@ -228,4 +281,28 @@ unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output) {
     mantisa = (mantisa >> 8) & 0x7FFFFF; // move the mantisa to the end and remove the first "invisible" one
     exponent = -n+127; // calculate exponent
     return((sign << 31) | (exponent << 23) | mantisa); // put everything together
+}
+
+// Exponential computation
+/*  This function is used to calculate exp(x)-1 on hardware.
+    The functions uses the taylor expantion the exp(x)-t which is equal to sum(x^k / k!,k=0,inf).
+    Infinity not being practical we set the sum to a given depth using the variable "depth".
+*/
+sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> myip::expm1(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> input, unsigned depth) {
+    // Initialize variables
+    unsigned i,j;
+    sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> num;
+    unsigned denom;
+    sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> output = 0;
+    // Loop through the taylor series
+    for (i = 1; i <= depth; i++) {  // depth sets the number of fractions to sum
+        num = 1;                    // reset the numerator and denominator for each fraction
+        denom = 1;
+        for (j=1; j < i, j++) {
+            num = num * input;      // Calculate the numerator which is the input to the power of the position of the fraction
+            denom = denom * j;      // Calculate the denominator which is the factorial of the position of the fraction
+        }
+        output += num/denom;        // Sum all the fractions
+    }
+    return output;                  // Pass output
 }

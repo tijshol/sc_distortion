@@ -44,11 +44,13 @@ SC_MODULE (myip)
 
     void proc_ip();
     int gen_select_mask();
+    int run_default()
     int run_clip();
     int run_overdrive();
-    int run_distortion();
+    int run_fuzz();
     sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> float2fixed(unsigned input);
     unsigned fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output);
+    sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> expm1(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> input, unsigned depth);
 
     SC_CTOR(myip)
     {
