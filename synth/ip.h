@@ -43,7 +43,6 @@ SC_MODULE (myip)
     sc_signal < bool > cnn_done;
 
     void proc_ip();
-    int gen_select_mask();
     int run_default();
     int run_clip();
     int run_overdrive();
