@@ -236,16 +236,14 @@ int myip::run_fuzz() {
     for (i = 0; i < INPUT_SIZE; i++) {
         gain_input = fixed_point_input[i];
         gain_input *= gain;
-        // if (fixed_point_input[i].is_neg()) {
-        //     expo = expm1(gain_input,10);
-        //     expo += 1;
-        //     fixed_point_output[i] = expo; // 1 - expo
-        // }
-        // else {
-        //     expo = expm1(-gain_input,10) + 1;
-        //     fixed_point_output[i] = expo; // expo -1
-        // }
-        fixed_point_output[i] = expm1(gain_input,10) + 1;
+        if (fixed_point_input[i].is_neg()) {
+            expo = expm1(gain_input,20) + 1 ;
+            fixed_point_output[i] = 1 - expo;
+        }
+        else {
+            expo = expm1(-gain_input,20) + 1;
+            fixed_point_output[i] = expo - 1;
+        }
 	}
 #ifndef __SYNTHESIS__
     // printf("\nEnd fuzz \n");
@@ -322,7 +320,9 @@ sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> myip::expm
         }
         output += num;        // Sum all the fractions
     }
-    output.print();
-    printf("\n");
+    // j = 10;
+    // num = input/j;
+    // num.print();
+    // printf("\n");
     return output;                  // Pass output
 }
