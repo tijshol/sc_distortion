@@ -34,11 +34,8 @@ int main ()
             SYS_MEM32((SYS_AXI_BASE + INPUT_OFFSET) + i) = corrected_ram;
         }
 
-        SYS_MEM32((SYS_AXI_BASE )) = 0x80;
-        // print_str("Start DISTORT \n");
-        
+        SYS_MEM32((SYS_AXI_BASE )) = 0x84;
         while (Iflag);
-        // print_str("DISTORT Done\n");
 
         Iflag = 1;
         enableIRQ();
@@ -46,7 +43,9 @@ int main ()
         for (i = 0; i < INPUT_SIZE; i++){
             j = SYS_MEM32((SYS_AXI_BASE + OUTPUT_OFFSET) + i);
             corrected_ram = (j<<16)|(j>>16);
+            // print_str("returned: "); print_hex_uint(corrected_ram); print_str("\n");
             OUTPUTRAM[k] = corrected_ram;
+            // print_str("written: "); print_hex_uint(OUTPUTRAM[k]); print_str("\n");
         }
     }
 

@@ -21,6 +21,7 @@ void myip::proc_ip() {
     unsigned int raddr;
     unsigned int prev_raddr;
 
+    sc_bv_base fraction(32);
     sc_uint <32> dataout;
 
     interrupt_request.write(0);
@@ -55,7 +56,7 @@ void myip::proc_ip() {
 
             case 0 ... INPUT_OFFSET-1:
                 waddr =  axi_waddr >> 2;
-                registers[waddr] = axi_data + 21;
+                registers[waddr] = axi_data;
                 break;
 
             case  INPUT_OFFSET ... OUTPUT_OFFSET-1 :
@@ -86,6 +87,8 @@ void myip::proc_ip() {
             case OUTPUT_OFFSET ... (OUTPUT_OFFSET + OUTPUT_SIZE*4)-1 :
                 raddr = (axi_raddr - OUTPUT_OFFSET) >> 2;
                 dataout = fixed2float(fixed_point_output[raddr]);
+                // fraction = fixed_point_output[raddr].range(SAMPLE_SIZE-1,0); // Get fixed point in bit vector
+                // dataout = fraction.to_uint(); // convert bit vector to uint
                 break;
             default:
                 break;
@@ -103,7 +106,7 @@ void myip::proc_ip() {
                     run_clip();
                 else if (((registers[0]) & 0x2) == 0x2)
                     run_overdrive();
-                else if (((registers[0]) & 0x3) == 0x3)
+                else if (((registers[0]) & 0x4) == 0x4)
                     run_fuzz();
                 else
                     run_default();
@@ -117,11 +120,9 @@ void myip::proc_ip() {
             else
                 interrupt_request.write(false);
         }
-
         wait();
     }
 }
-
 
 int myip::gen_select_mask() {
     int mask = 0;
@@ -224,14 +225,30 @@ int myip::run_overdrive() {
 */
 int myip::run_fuzz() {
 
+    int i, j;
+    sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> expo;
+    sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> gain_input;
+    int gain = 5;
+
 #ifndef __SYNTHESIS__
-    printf("Begin fuzz \n");
+    // printf("Begin fuzz \n");
 #endif
     for (i = 0; i < INPUT_SIZE; i++) {
-        fied_point_output[i] = expm1(fixed_point_input[i],20) + 1;
+        gain_input = fixed_point_input[i];
+        gain_input *= gain;
+        // if (fixed_point_input[i].is_neg()) {
+        //     expo = expm1(gain_input,10);
+        //     expo += 1;
+        //     fixed_point_output[i] = expo; // 1 - expo
+        // }
+        // else {
+        //     expo = expm1(-gain_input,10) + 1;
+        //     fixed_point_output[i] = expo; // expo -1
+        // }
+        fixed_point_output[i] = expm1(gain_input,10) + 1;
 	}
 #ifndef __SYNTHESIS__
-    printf("\nEnd fuzz \n");
+    // printf("\nEnd fuzz \n");
 #endif
     return (1);
 }
@@ -274,7 +291,7 @@ unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output) {
         mantisa = ~mantisa + 1; // correct for tow's complement
         sign = true; // and set sign bit
     }
-    while ((mantisa & 0x80000000) != 0x80000000) { // check if fisrt bit is one (the "invisible" one preceding the mantisa)
+    while (((mantisa & 0x80000000) != 0x80000000) && (n <= SAMPLE_SIZE)) { // check if fisrt bit is one (the "invisible" one preceding the mantisa)
         mantisa <<= 1; // if not shift the mantissa to the left once
         n++; // this number keeps track of the number of shifts
     }
@@ -288,21 +305,24 @@ unsigned myip::fixed2float(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> output) {
     The functions uses the taylor expantion the exp(x)-t which is equal to sum(x^k / k!,k=0,inf).
     Infinity not being practical we set the sum to a given depth using the variable "depth".
 */
-sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> myip::expm1(sc_fixed_fast <SAMPLE_SIZE,1,SC_TRN,SC_SAT> input, unsigned depth) {
+sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> myip::expm1(sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> input, unsigned int depth) {
     // Initialize variables
-    unsigned i,j;
-    sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> num;
-    unsigned denom;
-    sc_fixed_fast <SAMPLE_SIZE+7,1+7,SC_TRN,SC_SAT> output = 0;
+    unsigned int i,j;
+    sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> num;
+    // unsigned int denom;
+    sc_fixed_fast <SAMPLE_SIZE+EXP_ADD_BITS,1+EXP_ADD_BITS,SC_TRN,SC_SAT> output = 0;
     // Loop through the taylor series
     for (i = 1; i <= depth; i++) {  // depth sets the number of fractions to sum
         num = 1;                    // reset the numerator and denominator for each fraction
-        denom = 1;
-        for (j=1; j < i, j++) {
-            num = num * input;      // Calculate the numerator which is the input to the power of the position of the fraction
-            denom = denom * j;      // Calculate the denominator which is the factorial of the position of the fraction
+        // denom = 1;
+        for (j=1; j <= i; j++) {
+            // num *= input;      // Calculate the numerator which is the input to the power of the position of the fraction
+            // denom *= j;      // Calculate the denominator which is the factorial of the position of the fraction
+            num *= input/j;
         }
-        output += num/denom;        // Sum all the fractions
+        output += num;        // Sum all the fractions
     }
+    output.print();
+    printf("\n");
     return output;                  // Pass output
 }

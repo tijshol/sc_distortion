@@ -1,4 +1,5 @@
 #define SAMPLE_SIZE   32 // number of bits per sample
+#define EXP_ADD_BITS  16 // Additional bits needed for the calculation of the exponential function
 
 #define SAMPLE_RATE   48000 // kHz
 #define SAMPLE_MULT   1

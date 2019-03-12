@@ -1,1 +1,1 @@
-cd sw; make; cd ../tb; make; ./sctop ../sw/app.elf -DT=2 -iq=20; cd ..
+cd sw; make; cd ../tb; make; ./sctop ../sw/app.elf -DT=2 -iq=20 > cmd_out.txt; cd ..
